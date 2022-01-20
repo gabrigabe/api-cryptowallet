@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateWalletDto } from './create-wallet.dto';
+export class UpdateWalletDto {
+    readonly quoteTo: string;
 
-export class UpdateWalletDto extends PartialType(CreateWalletDto) {}
+    readonly currentCoin: string;
+
+    readonly value: number;
+}

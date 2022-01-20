@@ -11,6 +11,9 @@ export default class Wallet {
     @Column()
     cpf!: string;
 
+    @Column()
+    birthdate!: string;
+
     @CreateDateColumn()
     createdAt!: Date;
 

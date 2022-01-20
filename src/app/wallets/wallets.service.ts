@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { map, Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
@@ -9,27 +11,39 @@ import Wallet from './entities/wallet.entity';
 export class WalletsService {
     constructor(
         @InjectRepository(Wallet)
-        private readonly walletsService: Repository<Wallet>
+        private readonly walletsRepository: Repository<Wallet>,
+        private readonly httpService: HttpService
     ) {}
 
     async create(createWalletDto: CreateWalletDto) {
-        const newWallet = await this.walletsService.save(createWalletDto);
+        const uniqueCheck = await this.walletsRepository.find({ cpf: createWalletDto.cpf });
+
+        if (uniqueCheck) throw new BadRequestException(`cpf ${createWalletDto.cpf} already exists`);
+        const newWallet = await this.walletsRepository.save(createWalletDto);
         return newWallet;
     }
 
-    findAll() {
-        return `This action returns all wallets`;
+    async findAll() {
+        const allWallets = await this.walletsRepository.find();
+        return allWallets;
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} wallet`;
+    async findOne(address: string) {
+        return `This action returns a #${address} wallet`;
     }
 
-    update(id: number, updateWalletDto: UpdateWalletDto) {
-        return `This action updates a #${id} wallet`;
+    async update(address: string, updateWalletDto: UpdateWalletDto): Promise<Observable<any>> {
+        const algo = this.httpService
+            .get(
+                `https://economia.awesomeapi.com.br/json/last/${updateWalletDto.currentCoin}-${updateWalletDto.quoteTo}`
+            )
+            .pipe(map((response) => response.data));
+
+        console.log(address);
+        return algo;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} wallet`;
+    async remove(address: string) {
+        return `This action removes a #${address} wallet`;
     }
 }
