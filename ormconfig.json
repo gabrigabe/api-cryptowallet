@@ -1,0 +1,38 @@
+[
+    {
+      "name": "default",
+      "type": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "username": "docker",
+      "password": "docker",
+      "database": "cryptowallet",
+      "synchronize": true,
+      "logging": false,
+      "entities": ["dist/**/entities/*.js"],
+      "migrations": ["src/infra/migrations/*.ts"],
+      "cli": {
+        "entitiesDir": "dist/**/entities",
+        "migrationsDir": "src/infra/migratios"
+      }
+    },
+
+    {
+      "name": "test",
+      "type": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "username": "docker",
+      "password": "docker",
+      "database": "tests",
+      "synchronize": true,
+      "logging": false,
+      "dropSchema": true,
+      "entities": ["src/app/entities/*.ts"],
+      "migrations": ["src/infra/migrations/*.ts"],
+      "cli": {
+        "entitiesDir": "src/app/entities",
+        "migrationsDir": "src/infra/migratios"
+      }
+    }
+]
