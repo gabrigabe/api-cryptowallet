@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, ParseUUIDPipe, Put } from '@nestjs/common';
-import { WalletsService } from './wallets.service';
-import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { WalletsService } from '../services/wallets.service';
+import { CreateWalletDto } from '../dto/create-wallet.dto';
+import { UpdateWalletDto } from '../dto/update-wallet.dto';
 
 @Controller('api/v1/wallet')
 export class WalletsController {
@@ -23,7 +23,7 @@ export class WalletsController {
     }
 
     @Put(':address')
-    async update(@Param('address', ParseUUIDPipe) address: string, @Body() updateWalletDto: UpdateWalletDto) {
+    async update(@Param('address', ParseUUIDPipe) address: string, @Body() updateWalletDto: UpdateWalletDto[]) {
         return this.walletsService.update(address, updateWalletDto);
     }
 

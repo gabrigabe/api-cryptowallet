@@ -1,7 +1,9 @@
 export class UpdateWalletDto {
-    readonly quoteTo: string;
+    readonly quoteTo!: string;
 
-    readonly currentCoin: string;
+    readonly currentCoin!: string;
 
-    readonly value: number;
+    readonly value!: number;
+
+    readonly fullname!: string;
 }

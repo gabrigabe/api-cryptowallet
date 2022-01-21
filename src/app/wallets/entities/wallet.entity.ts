@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import Coins from './coins.entity';
 
 @Entity('Wallets')
-export default class Wallet {
+export default class Wallets {
     @PrimaryGeneratedColumn('uuid')
     address!: string;
 
@@ -19,4 +20,7 @@ export default class Wallet {
 
     @UpdateDateColumn()
     updatedAt!: Date;
+
+    @OneToMany(() => Coins, (coins) => coins.wallet)
+    coins!: Coins[];
 }
