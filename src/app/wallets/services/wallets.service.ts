@@ -28,7 +28,7 @@ export class WalletsService {
     }
 
     async findAll() {
-        const allWallets = await this.walletsRepository.find({ relations: ['coins'] });
+        const allWallets = await this.walletsRepository.find({ relations: ['coins', 'coins.transactions'] });
         return allWallets;
     }
 
@@ -43,7 +43,6 @@ export class WalletsService {
         await Promise.all(
             updateWalletDto.map(async (coins) => {
                 const getCotation = await this.coinsService.findExternalData(coins);
-                console.log(getCotation);
                 const findCoin = await this.coinsRepository.findOne({
                     where: {
                         address,
@@ -54,10 +53,9 @@ export class WalletsService {
                     const addCoin = await this.coinsRepository.save({
                         name: coins.quoteTo,
                         fullname: getCotation[0].name.split('/')[1],
-                        amount: coins.value,
+                        amount: getCotation[0].bid * coins.value,
                         address
                     });
-                    console.log(addCoin);
                 }
             })
         );

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import Transactions from './transactions.entity';
 import Wallets from './wallet.entity';
 
 @Entity('Coins')
@@ -12,7 +13,7 @@ export default class Coins {
     @Column()
     fullname!: string;
 
-    @Column()
+    @Column({ type: 'numeric' })
     amount!: number;
 
     @Column()
@@ -21,4 +22,7 @@ export default class Coins {
     @ManyToOne(() => Wallets, (wallets) => wallets.address)
     @JoinColumn({ name: 'address' })
     wallet!: Wallets;
+
+    @OneToMany(() => Transactions, (transaction) => transaction.coin)
+    transactions: Transactions[];
 }

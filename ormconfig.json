@@ -7,13 +7,13 @@
       "username": "docker",
       "password": "docker",
       "database": "cryptowallet",
-      "synchronize": true,
+      "synchronize": false,
       "logging": false,
       "entities": ["dist/**/entities/*.js"],
-      "migrations": ["src/infra/migrations/*.ts"],
+      "migrations": ["dist/infra/migrations/*.js"],
       "cli": {
         "entitiesDir": "dist/**/entities",
-        "migrationsDir": "src/infra/migratios"
+        "migrationsDir": "src/infra/migrations"
       }
     },
 

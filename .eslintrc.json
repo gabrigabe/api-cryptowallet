@@ -29,6 +29,7 @@
             }
         ],
         "class-methods-use-this": "off",
+        "import/no-cycle": 0,
         "comma-dangle": [
             "error",
             {
