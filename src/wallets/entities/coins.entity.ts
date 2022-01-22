@@ -13,7 +13,7 @@ export default class Coins {
     @Column()
     fullname!: string;
 
-    @Column({ type: 'numeric' })
+    @Column({ type: 'money' })
     amount!: number;
 
     @Column()

@@ -10,7 +10,7 @@
       "synchronize": false,
       "logging": false,
       "entities": ["dist/**/entities/*.js"],
-      "migrations": ["dist/infra/migrations/*.js"],
+      "migrations": ["dist/migrations/*.js"],
       "cli": {
         "entitiesDir": "dist/**/entities",
         "migrationsDir": "src/infra/migrations"
@@ -32,7 +32,7 @@
       "migrations": ["src/infra/migrations/*.ts"],
       "cli": {
         "entitiesDir": "src/app/entities",
-        "migrationsDir": "src/infra/migratios"
+        "migrationsDir": "src/migrations"
       }
     }
 ]

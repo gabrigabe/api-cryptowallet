@@ -6,7 +6,7 @@ export default class Transactions {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column({ type: 'numeric' })
+    @Column({ type: 'money' })
     value!: number;
 
     @Column()
