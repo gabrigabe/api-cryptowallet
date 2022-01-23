@@ -52,8 +52,8 @@ export class WalletsService {
                 if (!findCoin && coins.value > 0) {
                     const addCoin = await this.coinsRepository.save({
                         name: coins.quoteTo,
-                        fullname: getCotation[0].name.split('/')[1],
-                        amount: getCotation[0].bid * coins.value,
+                        fullname: getCotation.name.split('/')[1],
+                        amount: getCotation.bid * coins.value,
                         address
                     });
                 }
