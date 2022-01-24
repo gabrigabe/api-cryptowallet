@@ -43,11 +43,13 @@ export class WalletsService {
         return `This action returns a #${address} wallet`;
     }
 
-    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]) {
+    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]): Promise<Transactions[]> {
         const findAddress = await this.walletsRepository.findOne(address);
-
         if (!findAddress) throw new NotFoundException('Address Not Found');
-        const test = await Promise.all(
+
+        await this.validateFunds(address, addFundsDTO);
+
+        const transactions = await Promise.all(
             addFundsDTO.map(async (coins) => {
                 const getCotation = await this.coinsService.findExternalData(coins);
                 const findCoin = await this.coinsRepository.findOne({
@@ -56,11 +58,8 @@ export class WalletsService {
                         name: coins.quoteTo
                     }
                 });
-                if (!findCoin && coins.value < 0) {
-                    throw new BadRequestException(`Cant add coin ${coins.quoteTo} because value is negative`);
-                }
 
-                if (!findCoin && coins.value > 0) {
+                if (!findCoin) {
                     const addCoin = await this.coinsRepository.save({
                         name: coins.quoteTo,
                         fullname: getCotation.name.split('/')[1],
@@ -77,25 +76,49 @@ export class WalletsService {
                     return newTransaction;
                 }
 
-                if (findCoin) {
-                    if (Number(findCoin.amount) + Number(getCotation.bid * coins.value) < 0)
-                        throw new BadRequestException(`Invalid funds for coin ${coins.currentCoin}`);
+                await this.coinsRepository.update(
+                    { id: findCoin.id },
+                    { amount: Number(findCoin.amount) + Number(coins.value * getCotation.bid) }
+                );
 
-                    const newTransaction = await this.transactionsRepository.save({
-                        value: getCotation.bid * coins.value,
-                        sendTo: address,
-                        receiveFrom: address,
-                        currentCotation: getCotation.bid,
-                        coin_id: findCoin.id
-                    });
-                    return newTransaction;
-                }
+                const newTransaction = await this.transactionsRepository.save({
+                    value: getCotation.bid * coins.value,
+                    sendTo: address,
+                    receiveFrom: address,
+                    currentCotation: getCotation.bid,
+                    coin_id: findCoin.id
+                });
+                return newTransaction;
             })
         );
-        return test;
+        return transactions;
     }
 
     async remove(address: string) {
         return `This action removes a #${address} wallet`;
+    }
+
+    async validateFunds(address: string, data: AddFundsDTO[]) {
+        const validate = Promise.all(
+            data.map(async (coins) => {
+                const findCoin = await this.coinsRepository.findOne({
+                    where: {
+                        address,
+                        name: coins.quoteTo
+                    }
+                });
+                const getCotation = await this.coinsService.findExternalData(coins);
+
+                if (!findCoin && coins.value < 0)
+                    throw new BadRequestException(`You cant deposit a coin with a negative value`);
+
+                if (findCoin) {
+                    if (Number(findCoin.amount) + Number(getCotation.bid * coins.value) < 0)
+                        throw new BadRequestException(`No suficient funds for coin ${coins.currentCoin}`);
+                }
+            })
+        );
+
+        return validate;
     }
 }
