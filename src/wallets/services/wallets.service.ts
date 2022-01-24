@@ -40,12 +40,20 @@ export class WalletsService {
     }
 
     async findOne(address: string) {
-        return `This action returns a #${address} wallet`;
+        const oneWallet = await this.walletsRepository.findOne({
+            relations: ['coins', 'coins.transactions'],
+            where: {
+                address
+            }
+        });
+        if (!oneWallet) throw new NotFoundException('Wallet address Not Found');
+
+        return oneWallet;
     }
 
     async updateFunds(address: string, addFundsDTO: AddFundsDTO[]): Promise<Transactions[]> {
         const findAddress = await this.walletsRepository.findOne(address);
-        if (!findAddress) throw new NotFoundException('Address Not Found');
+        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
         await this.validateFunds(address, addFundsDTO);
 

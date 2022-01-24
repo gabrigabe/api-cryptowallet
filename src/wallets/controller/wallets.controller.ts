@@ -14,7 +14,6 @@ export class WalletsController {
 
     @Get()
     findAll(@Query() query: any) {
-        console.log(query);
         return this.walletsService.findAll(query);
     }
 
