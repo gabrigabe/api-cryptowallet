@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Body, Param, Delete, ParseUUIDPipe, Put, Query } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Param,
+    Delete,
+    ParseUUIDPipe,
+    Put,
+    Query,
+    ParseArrayPipe,
+    UseInterceptors,
+    ClassSerializerInterceptor
+} from '@nestjs/common';
 import { WalletsService } from '../services/wallets.service';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
 import { AddFundsDTO } from '../dto/addFunds.dto';
 
 @Controller('api/v1/wallet')
+@UseInterceptors(ClassSerializerInterceptor)
 export class WalletsController {
     constructor(private readonly walletsService: WalletsService) {}
 
@@ -23,7 +37,15 @@ export class WalletsController {
     }
 
     @Put(':address')
-    async updateFunds(@Param('address', ParseUUIDPipe) address: string, @Body() addFundsDTO: AddFundsDTO[]) {
+    async updateFunds(
+        @Param('address', ParseUUIDPipe) address: string,
+        @Body(
+            new ParseArrayPipe({
+                items: AddFundsDTO
+            })
+        )
+        addFundsDTO: AddFundsDTO[]
+    ) {
         return this.walletsService.updateFunds(address, addFundsDTO);
     }
 

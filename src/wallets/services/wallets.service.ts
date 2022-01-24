@@ -22,13 +22,13 @@ export class WalletsService {
         private readonly coinsService: CoinsService
     ) {}
 
-    async create(createWalletDto: CreateWalletDto): Promise<Wallet> {
+    async create(createWalletDto: CreateWalletDto) {
         const uniqueCheck = await this.walletsRepository.findOne({ cpf: createWalletDto.cpf });
 
         if (uniqueCheck) throw new BadRequestException(`cpf ${createWalletDto.cpf} already exists`);
 
         const newWallet = await this.walletsRepository.save(createWalletDto);
-        return newWallet;
+        return instanceToPlain(newWallet);
     }
 
     async findAll(query: any) {
@@ -39,7 +39,7 @@ export class WalletsService {
         return instanceToPlain(allWallets);
     }
 
-    async findOne(address: string) {
+    async findOne(address: string): Promise<Record<string, undefined>> {
         const oneWallet = await this.walletsRepository.findOne({
             relations: ['coins', 'coins.transactions'],
             where: {
@@ -48,10 +48,10 @@ export class WalletsService {
         });
         if (!oneWallet) throw new NotFoundException('Wallet address Not Found');
 
-        return oneWallet;
+        return instanceToPlain(oneWallet);
     }
 
-    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]): Promise<Transactions[]> {
+    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]) {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
@@ -81,7 +81,7 @@ export class WalletsService {
                         currentCotation: getCotation.bid,
                         coin_id: addCoin.id
                     });
-                    return newTransaction;
+                    return this.transactionsRepository.findOne({ id: newTransaction.id });
                 }
 
                 await this.coinsRepository.update(
@@ -96,10 +96,10 @@ export class WalletsService {
                     currentCotation: getCotation.bid,
                     coin_id: findCoin.id
                 });
-                return newTransaction;
+                return this.transactionsRepository.findOne({ id: newTransaction.id });
             })
         );
-        return transactions;
+        return instanceToPlain(transactions);
     }
 
     async remove(address: string) {

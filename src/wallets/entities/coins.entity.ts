@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import Transactions from './transactions.entity';
 import Wallets from './wallet.entity';
@@ -15,6 +15,7 @@ export default class Coins {
     @Column()
     fullname!: string;
 
+    @Type(() => Number)
     @Column({ type: 'numeric' })
     amount!: number;
 

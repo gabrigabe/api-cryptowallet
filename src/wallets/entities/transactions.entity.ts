@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import Coins from './coins.entity';
 
@@ -8,6 +8,7 @@ export default class Transactions {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
+    @Type(() => Number)
     @Column({ type: 'numeric' })
     value!: number;
 
@@ -20,6 +21,7 @@ export default class Transactions {
     @Column()
     receiveFrom!: string;
 
+    @Type(() => Number)
     @Column({ type: 'numeric' })
     currentCotation!: number;
 
