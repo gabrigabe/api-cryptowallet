@@ -1,23 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import Coins from './coins.entity';
 
 @Entity('Transactions')
 export default class Transactions {
+    @Exclude()
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column({ type: 'money' })
+    @Column({ type: 'numeric' })
     value!: number;
 
-    @Column()
+    @CreateDateColumn()
     datetime: Date;
 
     @Column()
-    sendto!: string;
+    sendTo!: string;
 
     @Column()
-    receivefrom!: string;
+    receiveFrom!: string;
 
+    @Column({ type: 'numeric' })
+    currentCotation!: number;
+
+    @Exclude()
     @Column()
     coin_id!: string;
 

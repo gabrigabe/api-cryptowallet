@@ -6,9 +6,10 @@ import { WalletsController } from './controller/wallets.controller';
 import { CoinsService } from './services/coins.service';
 import Wallet from './entities/wallet.entity';
 import Coins from './entities/coins.entity';
+import Transactions from './entities/transactions.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Wallet, Coins]), HttpModule],
+    imports: [TypeOrmModule.forFeature([Wallet, Coins, Transactions]), HttpModule],
     controllers: [WalletsController],
     providers: [WalletsService, CoinsService]
 })

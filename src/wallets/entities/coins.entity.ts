@@ -1,9 +1,11 @@
+import { Exclude } from 'class-transformer';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import Transactions from './transactions.entity';
 import Wallets from './wallet.entity';
 
 @Entity('Coins')
 export default class Coins {
+    @Exclude()
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
@@ -13,9 +15,10 @@ export default class Coins {
     @Column()
     fullname!: string;
 
-    @Column({ type: 'money' })
+    @Column({ type: 'numeric' })
     amount!: number;
 
+    @Exclude()
     @Column()
     address!: string;
 

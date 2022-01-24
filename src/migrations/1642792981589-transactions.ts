@@ -19,7 +19,7 @@ export class Transactions1642792981589 implements MigrationInterface {
 
                     {
                         name: 'value',
-                        type: 'money',
+                        type: 'numeric',
                         isNullable: false
                     },
                     {
@@ -30,13 +30,18 @@ export class Transactions1642792981589 implements MigrationInterface {
                     },
 
                     {
-                        name: 'sendto',
+                        name: 'sendTo',
                         type: 'uuid',
                         isNullable: false
                     },
                     {
-                        name: 'receivefrom',
+                        name: 'receiveFrom',
                         type: 'uuid',
+                        isNullable: false
+                    },
+                    {
+                        name: 'currentCotation',
+                        type: 'numeric',
                         isNullable: false
                     },
                     {
