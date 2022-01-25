@@ -97,18 +97,11 @@ export class WalletsService {
     }
 
     async transferFunds(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
-        const findAddress = await this.walletsRepository.findOne(address);
-        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
-
-        const findReceiverAddress = await this.walletsRepository.findOne(receiverAddress);
-        if (!findReceiverAddress) throw new NotFoundException('Receiver wallet address Not Found');
-
         const getCotation = await this.coinsService.findExternalData(transferfundsDTO);
 
         const findCoin = await this.coinsService.findOneCoin(address, transferfundsDTO.quoteTo);
 
-        if (!findCoin || Number(findCoin.amount) + Number(transferfundsDTO.value * getCotation.bid) < 0)
-            throw new BadRequestException(`You dont have funds of ${transferfundsDTO.quoteTo} to transfer`);
+        await this.validateTransfer(address, { receiverAddress, ...transferfundsDTO });
 
         let findReceiverCoin = await this.coinsService.findOneCoin(receiverAddress, transferfundsDTO.quoteTo);
 
@@ -145,7 +138,12 @@ export class WalletsService {
             { id: receiver.coin_id },
             { amount: Number(findReceiverCoin.amount) + Number(receiver.value) }
         );
-        return sender;
+
+        const response = await this.transactionsRepository.findOne({
+            where: { id: sender.id }
+        });
+
+        return response;
     }
 
     async remove(address: string): Promise<void> {
@@ -173,5 +171,20 @@ export class WalletsService {
         );
 
         return validate;
+    }
+
+    async validateTransfer(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
+        const findAddress = await this.walletsRepository.findOne(address);
+        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
+
+        const findReceiverAddress = await this.walletsRepository.findOne(receiverAddress);
+        if (!findReceiverAddress) throw new NotFoundException('Receiver wallet address Not Found');
+
+        const getCotation = await this.coinsService.findExternalData(transferfundsDTO);
+
+        const findCoin = await this.coinsService.findOneCoin(address, transferfundsDTO.quoteTo);
+
+        if (!findCoin || Number(findCoin.amount) < Number(transferfundsDTO.value * getCotation.bid))
+            throw new BadRequestException(`You dont have funds of ${transferfundsDTO.currentCoin} to transfer`);
     }
 }
