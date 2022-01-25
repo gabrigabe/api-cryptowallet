@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { instanceToPlain } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
 import { AddFundsDTO } from '../dto/addFunds.dto';
@@ -28,7 +27,7 @@ export class WalletsService {
         if (uniqueCheck) throw new BadRequestException(`cpf ${createWalletDto.cpf} already exists`);
 
         const newWallet = await this.walletsRepository.save(createWalletDto);
-        return instanceToPlain(newWallet);
+        return newWallet;
     }
 
     async findAll(query: any) {
@@ -38,7 +37,7 @@ export class WalletsService {
         return allWallets;
     }
 
-    async findOne(address: string): Promise<Record<string, undefined>> {
+    async findOne(address: string): Promise<Wallet> {
         const oneWallet = await this.walletsRepository.findOne({
             where: {
                 address
@@ -46,7 +45,7 @@ export class WalletsService {
         });
         if (!oneWallet) throw new NotFoundException('Wallet address Not Found');
 
-        return instanceToPlain(oneWallet);
+        return oneWallet;
     }
 
     async updateFunds(address: string, addFundsDTO: AddFundsDTO[]) {
@@ -93,7 +92,7 @@ export class WalletsService {
                 return this.transactionsRepository.findOne({ id: newTransaction.id });
             })
         );
-        return instanceToPlain(transactions);
+        return transactions;
     }
 
     async transferFunds(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
