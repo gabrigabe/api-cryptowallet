@@ -49,9 +49,6 @@ export class WalletsService {
     }
 
     async updateFunds(address: string, addFundsDTO: AddFundsDTO[]) {
-        const findAddress = await this.walletsRepository.findOne(address);
-        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
-
         await this.validateFunds(address, addFundsDTO);
 
         const transactions = await Promise.all(
@@ -153,7 +150,10 @@ export class WalletsService {
     }
 
     async validateFunds(address: string, data: AddFundsDTO[]) {
-        const validate = Promise.all(
+        const findAddress = await this.walletsRepository.findOne(address);
+        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
+
+        const validations = Promise.all(
             data.map(async (coins) => {
                 const findCoin = await this.coinsService.findOneCoin(address, coins.quoteTo);
 
@@ -168,8 +168,7 @@ export class WalletsService {
                 }
             })
         );
-
-        return validate;
+        return validations;
     }
 
     async validateTransfer(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
