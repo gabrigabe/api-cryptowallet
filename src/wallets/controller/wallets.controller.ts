@@ -10,7 +10,8 @@ import {
     Query,
     ParseArrayPipe,
     UseInterceptors,
-    ClassSerializerInterceptor
+    ClassSerializerInterceptor,
+    HttpCode
 } from '@nestjs/common';
 import { WalletsService } from '../services/wallets.service';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
@@ -49,6 +50,7 @@ export class WalletsController {
         return this.walletsService.updateFunds(address, addFundsDTO);
     }
 
+    @HttpCode(204)
     @Delete(':address')
     remove(@Param('address', ParseUUIDPipe) address: string) {
         return this.walletsService.remove(address);

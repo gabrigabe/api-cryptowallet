@@ -8,6 +8,7 @@ import Coins from '../entities/coins.entity';
 import Transactions from '../entities/transactions.entity';
 import Wallet from '../entities/wallet.entity';
 import { CoinsService } from './coins.service';
+import { TransferFundsDTO } from '../dto/transferFunds.dto';
 
 @Injectable()
 export class WalletsService {
@@ -102,8 +103,33 @@ export class WalletsService {
         return instanceToPlain(transactions);
     }
 
-    async remove(address: string) {
-        return `This action removes a #${address} wallet`;
+    async transferFunds(address: string, transferFundsDTO: TransferFundsDTO) {
+        const findAddress = await this.walletsRepository.findOne(address);
+        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
+
+        const getCotation = await this.coinsService.findExternalData(transferFundsDTO);
+
+        const findCoin = await this.coinsRepository.findOne({
+            where: {
+                address,
+                name: transferFundsDTO.quoteTo
+            }
+        });
+
+        const newTransfer = await this.transactionsRepository.save({
+            value: transferFundsDTO.value,
+            sendTo: transferFundsDTO.receiverAddress,
+            receiveFrom: address,
+            currentCotation: getCotation.bid,
+            coin_id: findCoin.id
+        });
+    }
+
+    async remove(address: string): Promise<void> {
+        const findAddress = await this.walletsRepository.findOne(address);
+        if (!findAddress) throw new NotFoundException('Wallet address Not Found');
+
+        await this.walletsRepository.delete(address);
     }
 
     async validateFunds(address: string, data: AddFundsDTO[]) {
