@@ -19,7 +19,6 @@ export class WalletsService {
         private readonly coinsRepository: Repository<Coins>,
         @InjectRepository(Transactions)
         private readonly transactionsRepository: Repository<Transactions>,
-
         private readonly coinsService: CoinsService
     ) {}
 
@@ -107,13 +106,14 @@ export class WalletsService {
         const getCotation = await this.coinsService.findExternalData(transferfundsDTO);
 
         const findCoin = await this.coinsService.findOneCoin(address, transferfundsDTO.quoteTo);
-        if (!findCoin || Number(findCoin.amount) + Number(getCotation.bid * transferfundsDTO.value) < 0)
+
+        if (!findCoin || Number(findCoin.amount) + Number(transferfundsDTO.value * getCotation.bid) < 0)
             throw new BadRequestException(`You dont have funds of ${transferfundsDTO.quoteTo} to transfer`);
 
-        const findReceiverCoin = await this.coinsService.findOneCoin(receiverAddress, transferfundsDTO.quoteTo);
+        let findReceiverCoin = await this.coinsService.findOneCoin(receiverAddress, transferfundsDTO.quoteTo);
 
         if (!findReceiverCoin) {
-            await this.coinsRepository.save({
+            findReceiverCoin = await this.coinsRepository.save({
                 name: transferfundsDTO.quoteTo,
                 fullname: getCotation.name.split('/')[1],
                 amount: 0,
@@ -126,18 +126,26 @@ export class WalletsService {
             currentCotation: Number(getCotation.bid)
         };
 
-        await this.transactionsRepository.save({
+        const sender = await this.transactionsRepository.save({
             value: -transferfundsDTO.value * getCotation.bid,
             coin_id: findCoin.id,
             ...data
         });
-        await this.transactionsRepository.save({
+        const receiver = await this.transactionsRepository.save({
             value: transferfundsDTO.value * getCotation.bid,
             coin_id: findReceiverCoin.id,
             ...data
         });
 
-        return data;
+        await this.coinsRepository.update(
+            { id: sender.coin_id },
+            { amount: Number(findCoin.amount) + Number(sender.value) }
+        );
+        await this.coinsRepository.update(
+            { id: receiver.coin_id },
+            { amount: Number(findReceiverCoin.amount) + Number(receiver.value) }
+        );
+        return sender;
     }
 
     async remove(address: string): Promise<void> {
