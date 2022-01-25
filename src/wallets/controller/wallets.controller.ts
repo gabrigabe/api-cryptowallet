@@ -16,6 +16,7 @@ import {
 import { WalletsService } from '../services/wallets.service';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
 import { AddFundsDTO } from '../dto/addFunds.dto';
+import { TransferFundsDTO } from '../dto/transferFunds.dto';
 
 @Controller('api/v1/wallet')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -48,6 +49,11 @@ export class WalletsController {
         addFundsDTO: AddFundsDTO[]
     ) {
         return this.walletsService.updateFunds(address, addFundsDTO);
+    }
+
+    @Post(':address/transaction')
+    async transferFunds(@Param('address', ParseUUIDPipe) address: string, @Body() transferFundsDTO: TransferFundsDTO) {
+        return this.walletsService.transferFunds(address, transferFundsDTO);
     }
 
     @HttpCode(204)

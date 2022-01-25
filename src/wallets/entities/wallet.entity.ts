@@ -21,6 +21,8 @@ export default class Wallets {
     @UpdateDateColumn()
     updatedAt!: Date;
 
-    @OneToMany(() => Coins, (coins) => coins.wallet)
+    @OneToMany(() => Coins, (coins) => coins.wallet, {
+        eager: true
+    })
     coins!: Coins[];
 }

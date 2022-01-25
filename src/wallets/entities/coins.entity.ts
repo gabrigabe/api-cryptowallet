@@ -27,6 +27,8 @@ export default class Coins {
     @JoinColumn({ name: 'address' })
     wallet!: Wallets;
 
-    @OneToMany(() => Transactions, (transaction) => transaction.coin)
+    @OneToMany(() => Transactions, (transaction) => transaction.coin, {
+        eager: true
+    })
     transactions: Transactions[];
 }

@@ -34,15 +34,13 @@ export class WalletsService {
 
     async findAll(query: any) {
         const allWallets = await this.walletsRepository.find({
-            relations: ['coins', 'coins.transactions'],
             where: query
         });
-        return instanceToPlain(allWallets);
+        return allWallets;
     }
 
     async findOne(address: string): Promise<Record<string, undefined>> {
         const oneWallet = await this.walletsRepository.findOne({
-            relations: ['coins', 'coins.transactions'],
             where: {
                 address
             }
@@ -61,12 +59,8 @@ export class WalletsService {
         const transactions = await Promise.all(
             addFundsDTO.map(async (coins) => {
                 const getCotation = await this.coinsService.findExternalData(coins);
-                const findCoin = await this.coinsRepository.findOne({
-                    where: {
-                        address,
-                        name: coins.quoteTo
-                    }
-                });
+
+                const findCoin = await this.coinsService.findOneCoin(address, coins.quoteTo);
 
                 if (!findCoin) {
                     const addCoin = await this.coinsRepository.save({
@@ -103,26 +97,47 @@ export class WalletsService {
         return instanceToPlain(transactions);
     }
 
-    async transferFunds(address: string, transferFundsDTO: TransferFundsDTO) {
+    async transferFunds(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
-        const getCotation = await this.coinsService.findExternalData(transferFundsDTO);
+        const findReceiverAddress = await this.walletsRepository.findOne(receiverAddress);
+        if (!findReceiverAddress) throw new NotFoundException('Receiver wallet address Not Found');
 
-        const findCoin = await this.coinsRepository.findOne({
-            where: {
-                address,
-                name: transferFundsDTO.quoteTo
-            }
-        });
+        const getCotation = await this.coinsService.findExternalData(transferfundsDTO);
 
-        const newTransfer = await this.transactionsRepository.save({
-            value: transferFundsDTO.value,
-            sendTo: transferFundsDTO.receiverAddress,
+        const findCoin = await this.coinsService.findOneCoin(address, transferfundsDTO.quoteTo);
+        if (!findCoin || Number(findCoin.amount) + Number(getCotation.bid * transferfundsDTO.value) < 0)
+            throw new BadRequestException(`You dont have funds of ${transferfundsDTO.quoteTo} to transfer`);
+
+        const findReceiverCoin = await this.coinsService.findOneCoin(receiverAddress, transferfundsDTO.quoteTo);
+
+        if (!findReceiverCoin) {
+            await this.coinsRepository.save({
+                name: transferfundsDTO.quoteTo,
+                fullname: getCotation.name.split('/')[1],
+                amount: 0,
+                address: receiverAddress
+            });
+        }
+        const data = {
+            sendTo: receiverAddress,
             receiveFrom: address,
-            currentCotation: getCotation.bid,
-            coin_id: findCoin.id
+            currentCotation: Number(getCotation.bid)
+        };
+
+        await this.transactionsRepository.save({
+            value: -transferfundsDTO.value * getCotation.bid,
+            coin_id: findCoin.id,
+            ...data
         });
+        await this.transactionsRepository.save({
+            value: transferfundsDTO.value * getCotation.bid,
+            coin_id: findReceiverCoin.id,
+            ...data
+        });
+
+        return data;
     }
 
     async remove(address: string): Promise<void> {
@@ -135,16 +150,12 @@ export class WalletsService {
     async validateFunds(address: string, data: AddFundsDTO[]) {
         const validate = Promise.all(
             data.map(async (coins) => {
-                const findCoin = await this.coinsRepository.findOne({
-                    where: {
-                        address,
-                        name: coins.quoteTo
-                    }
-                });
+                const findCoin = await this.coinsService.findOneCoin(address, coins.quoteTo);
+
                 const getCotation = await this.coinsService.findExternalData(coins);
 
                 if (!findCoin && coins.value < 0)
-                    throw new BadRequestException(`You cant deposit a coin with a negative value`);
+                    throw new BadRequestException(`You cant deposit or transfer a coin with a negative value`);
 
                 if (findCoin) {
                     if (Number(findCoin.amount) + Number(getCotation.bid * coins.value) < 0)

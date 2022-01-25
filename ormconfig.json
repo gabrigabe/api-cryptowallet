@@ -7,7 +7,7 @@
       "username": "docker",
       "password": "docker",
       "database": "cryptowallet",
-      "synchronize": false,
+      "synchronize": true,
       "logging": false,
       "entities": ["dist/**/entities/*.js"],
       "migrations": ["dist/migrations/*.js"],
