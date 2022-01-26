@@ -56,6 +56,11 @@ export class WalletsController {
         return this.walletsService.transferFunds(address, transferFundsDTO);
     }
 
+    @Get(':address/transaction')
+    findTransactions(@Param('address', ParseUUIDPipe) address: string) {
+        return this.walletsService.getTransactionsHistory(address);
+    }
+
     @HttpCode(204)
     @Delete(':address')
     remove(@Param('address', ParseUUIDPipe) address: string) {

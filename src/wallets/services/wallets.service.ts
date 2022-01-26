@@ -8,6 +8,8 @@ import Transactions from '../entities/transactions.entity';
 import Wallet from '../entities/wallet.entity';
 import { CoinsService } from './coins.service';
 import { TransferFundsDTO } from '../dto/transferFunds.dto';
+import { transactionsSerializer } from '../utils/serializers/transactionsSerializer';
+import { ITransactions } from '../interfaces/wallet.interface';
 
 @Injectable()
 export class WalletsService {
@@ -134,6 +136,18 @@ export class WalletsService {
         return response;
     }
 
+    async getTransactionsHistory(address: string): Promise<ITransactions[]> {
+        const findTransactions = await this.coinsRepository.find({
+            where: {
+                address
+            }
+        });
+
+        const serializedTransactions = transactionsSerializer(findTransactions);
+
+        return serializedTransactions;
+    }
+
     async remove(address: string): Promise<void> {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
@@ -141,7 +155,7 @@ export class WalletsService {
         await this.walletsRepository.delete(address);
     }
 
-    async validateFunds(address: string, data: AddFundsDTO[]) {
+    private async validateFunds(address: string, data: AddFundsDTO[]) {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
@@ -163,7 +177,7 @@ export class WalletsService {
         return validations;
     }
 
-    async validateTransfer(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
+    private async validateTransfer(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
