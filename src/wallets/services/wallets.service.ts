@@ -9,7 +9,9 @@ import Wallet from '../entities/wallet.entity';
 import { CoinsService } from './coins.service';
 import { TransferFundsDTO } from '../dto/transferFunds.dto';
 import { transactionsSerializer } from '../utils/serializers/transactionsSerializer';
-import { ITransactions } from '../interfaces/wallet.interface';
+import { ITransactions } from '../interfaces/transactions.interface';
+import { serializeOneWallet, serializeAllWallet } from '../utils/serializers/walletsSerializer';
+import { IWallets } from '../interfaces/allWallets.interface';
 
 @Injectable()
 export class WalletsService {
@@ -23,20 +25,25 @@ export class WalletsService {
         private readonly coinsService: CoinsService
     ) {}
 
-    async create(createWalletDto: CreateWalletDto) {
+    async create(createWalletDto: CreateWalletDto): Promise<Wallet> {
         const uniqueCheck = await this.walletsRepository.findOne({ cpf: createWalletDto.cpf });
 
         if (uniqueCheck) throw new BadRequestException(`cpf ${createWalletDto.cpf} already exists`);
 
-        const newWallet = await this.walletsRepository.save(createWalletDto);
-        return newWallet;
+        const { address, name, cpf, birthdate, createdAt, updatedAt } = await this.walletsRepository.save(
+            createWalletDto
+        );
+        return { address, name, cpf, birthdate, createdAt, updatedAt };
     }
 
-    async findAll(query: any) {
+    async findAll(query: any): Promise<IWallets[]> {
         const allWallets = await this.walletsRepository.find({
+            relations: ['coins'],
             where: query
         });
-        return allWallets;
+
+        const serializedWallets = serializeAllWallet(allWallets);
+        return serializedWallets;
     }
 
     async findOne(address: string): Promise<Wallet> {
@@ -47,10 +54,11 @@ export class WalletsService {
         });
         if (!oneWallet) throw new NotFoundException('Wallet address Not Found');
 
-        return oneWallet;
+        const serializedWallet = serializeOneWallet(oneWallet);
+        return serializedWallet;
     }
 
-    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]) {
+    async updateFunds(address: string, addFundsDTO: AddFundsDTO[]): Promise<Transactions[]> {
         await this.validateFunds(address, addFundsDTO);
 
         const transactions = await Promise.all(
@@ -86,7 +94,10 @@ export class WalletsService {
         return transactions;
     }
 
-    async transferFunds(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
+    async transferFunds(
+        address: string,
+        { receiverAddress, ...transferfundsDTO }: TransferFundsDTO
+    ): Promise<Transactions> {
         const getCotation = await this.coinsService.findExternalData(transferfundsDTO);
 
         const findCoin = await this.coinsService.findOneCoin(address, transferfundsDTO.quoteTo);
@@ -155,7 +166,7 @@ export class WalletsService {
         await this.walletsRepository.delete(address);
     }
 
-    private async validateFunds(address: string, data: AddFundsDTO[]) {
+    private async validateFunds(address: string, data: AddFundsDTO[]): Promise<void[]> {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 
@@ -177,7 +188,10 @@ export class WalletsService {
         return validations;
     }
 
-    private async validateTransfer(address: string, { receiverAddress, ...transferfundsDTO }: TransferFundsDTO) {
+    private async validateTransfer(
+        address: string,
+        { receiverAddress, ...transferfundsDTO }: TransferFundsDTO
+    ): Promise<void> {
         const findAddress = await this.walletsRepository.findOne(address);
         if (!findAddress) throw new NotFoundException('Wallet address Not Found');
 

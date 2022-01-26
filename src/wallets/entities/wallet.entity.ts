@@ -24,5 +24,5 @@ export default class Wallets {
     @OneToMany(() => Coins, (coins) => coins.wallet, {
         eager: true
     })
-    coins!: Coins[];
+    coins?: Coins[];
 }
