@@ -18,7 +18,7 @@ export class Coins1642792981588 implements MigrationInterface {
                     },
 
                     {
-                        name: 'name',
+                        name: 'coin',
                         type: 'varchar',
                         isNullable: false
                     },

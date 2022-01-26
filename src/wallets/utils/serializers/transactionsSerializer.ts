@@ -5,7 +5,7 @@ export const transactionsSerializer = (coins: Coins[]): ITransactions[] => {
     const transactions: ITransactions[] = [];
     coins.map((coin) => {
         const transaction = {
-            coin: coin.name,
+            coin: coin.coin,
             transactions: coin.transactions
         };
 

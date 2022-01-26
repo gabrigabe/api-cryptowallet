@@ -61,7 +61,7 @@ export class WalletsService {
 
                 if (!findCoin) {
                     findCoin = await this.coinsRepository.save({
-                        name: coins.quoteTo,
+                        coin: coins.quoteTo,
                         fullname: getCotation.name.split('/')[1],
                         amount: 0,
                         address
@@ -97,7 +97,7 @@ export class WalletsService {
 
         if (!findReceiverCoin) {
             findReceiverCoin = await this.coinsRepository.save({
-                name: transferfundsDTO.quoteTo,
+                coin: transferfundsDTO.quoteTo,
                 fullname: getCotation.name.split('/')[1],
                 amount: 0,
                 address: receiverAddress

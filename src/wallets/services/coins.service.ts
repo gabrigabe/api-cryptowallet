@@ -32,7 +32,7 @@ export class CoinsService {
         const findCoin = this.coinsRepository.findOne({
             where: {
                 address,
-                name: data
+                coin: data
             }
         });
         return findCoin;

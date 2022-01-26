@@ -10,7 +10,7 @@ export default class Coins {
     id!: string;
 
     @Column()
-    name!: string;
+    coin!: string;
 
     @Column()
     fullname!: string;
