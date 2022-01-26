@@ -55,23 +55,15 @@ export class WalletsService {
             addFundsDTO.map(async (coins) => {
                 const getCotation = await this.coinsService.findExternalData(coins);
 
-                const findCoin = await this.coinsService.findOneCoin(address, coins.quoteTo);
+                let findCoin = await this.coinsService.findOneCoin(address, coins.quoteTo);
 
                 if (!findCoin) {
-                    const addCoin = await this.coinsRepository.save({
+                    findCoin = await this.coinsRepository.save({
                         name: coins.quoteTo,
                         fullname: getCotation.name.split('/')[1],
-                        amount: getCotation.bid * coins.value,
+                        amount: 0,
                         address
                     });
-                    const newTransaction = await this.transactionsRepository.save({
-                        value: getCotation.bid * coins.value,
-                        sendTo: address,
-                        receiveFrom: address,
-                        currentCotation: getCotation.bid,
-                        coin_id: addCoin.id
-                    });
-                    return this.transactionsRepository.findOne({ id: newTransaction.id });
                 }
 
                 await this.coinsRepository.update(
@@ -160,7 +152,7 @@ export class WalletsService {
                 const getCotation = await this.coinsService.findExternalData(coins);
 
                 if (!findCoin && coins.value < 0)
-                    throw new BadRequestException(`You cant deposit or transfer a coin with a negative value`);
+                    throw new BadRequestException(`You cant deposit a coin with a negative value`);
 
                 if (findCoin) {
                     if (Number(findCoin.amount) + Number(getCotation.bid * coins.value) < 0)
