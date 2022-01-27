@@ -1,4 +1,6 @@
-import { IsString, Matches, MinLength } from 'class-validator';
+import { IsString, Matches, MinLength, Validate } from 'class-validator';
+import { AgeChecker } from '../utils/validations/checkAge';
+import { DateChecker } from '../utils/validations/checkDate';
 
 export class CreateWalletDto {
     @IsString()
@@ -10,6 +12,7 @@ export class CreateWalletDto {
     readonly cpf!: string;
 
     @IsString()
-    @Matches(/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/)
+    @Validate(DateChecker)
+    @Validate(AgeChecker)
     readonly birthdate!: string;
 }
