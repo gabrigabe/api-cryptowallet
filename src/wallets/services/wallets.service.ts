@@ -36,31 +36,14 @@ export class WalletsService {
         return { address, name, cpf, birthdate, createdAt, updatedAt };
     }
 
-    async findAll(query: any) /*: Promise<IWallets[]> */ {
+    async findAll(query: any): Promise<IWallets[]> {
         const allWallets = await this.walletsRepository.find({
             relations: ['coins', 'coins.transactions'],
-            where: {
-                ...(query.name && { name: query.name }),
-                coins: {
-                    ...(query.coin && { coin: query.coin })
-                }
-            }
+            where: query
         });
 
-        /*   const allWallets = await this.walletsRepository
-            .createQueryBuilder('wallets')
-            .leftJoinAndSelect('wallets.coins', 'coins')
-            // .where('coins.coin = :coin AND coins.fullName = :fullname', { coin: query.coin, fullname: query.fullname })
-            .leftJoinAndSelect('coins.transactions', 'transactions')
-            .where({
-                ...(query.address && { address: query.address }),
-                ...(query.coin && { 'coins.coin': query.coin }),
-                ...(query.tId && { 'coins.transactions.id': query.tId })
-            })
-            .getQueryAndParameters(); */
-
-        //  const serializedWallets = serializeAllWallet(allWallets);
-        return allWallets;
+        const serializedWallets = serializeAllWallet(allWallets);
+        return serializedWallets;
     }
 
     async findOne(address: string): Promise<Wallet> {
@@ -164,10 +147,11 @@ export class WalletsService {
         return response;
     }
 
-    async getTransactionsHistory(address: string): Promise<ITransactions[]> {
+    async getTransactionsHistory(address: string, query: any): Promise<ITransactions[]> {
         const findTransactions = await this.coinsRepository.find({
             where: {
-                address
+                address,
+                ...query
             }
         });
 

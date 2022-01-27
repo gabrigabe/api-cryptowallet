@@ -57,8 +57,8 @@ export class WalletsController {
     }
 
     @Get(':address/transaction')
-    findTransactions(@Param('address', ParseUUIDPipe) address: string) {
-        return this.walletsService.getTransactionsHistory(address);
+    findTransactions(@Query() query: any, @Param('address', ParseUUIDPipe) address: string) {
+        return this.walletsService.getTransactionsHistory(address, query);
     }
 
     @HttpCode(204)
