@@ -159,15 +159,24 @@ export class WalletsService {
         return response;
     }
 
-    async getTransactionsHistory(address: string, query: any): Promise<ITransactions[]> {
-        const findTransactions = await this.coinsRepository.find({
-            where: {
-                address,
-                ...query
-            }
+    async getTransactionsHistory(address: string, querys: any): Promise<ITransactions[]> {
+        const findTransactions = this.coinsRepository
+            .createQueryBuilder('coins')
+            .where('coins.address = :address', { address })
+            .leftJoinAndSelect('coins.transactions', 'transactions');
+
+        Object.keys(querys).forEach((query) => {
+            const subquery = this.coinsRepository
+                .createQueryBuilder('coins')
+                .select('coins.id')
+                .leftJoin('coins.transactions', 'transactions');
+            subquery.andWhere(`${query} = :${query}`);
+            subquery.setParameter(`${query}`, querys[query]);
+            findTransactions.andWhere(`coins.id in (${subquery.getQuery()})`);
+            findTransactions.setParameters(subquery.getParameters());
         });
 
-        const serializedTransactions = transactionsSerializer(findTransactions);
+        const serializedTransactions = transactionsSerializer(await findTransactions.getMany());
 
         return serializedTransactions;
     }
