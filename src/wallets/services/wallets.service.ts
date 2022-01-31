@@ -55,6 +55,8 @@ export class WalletsService {
         });
 
         const serializedWallets = serializeAllWallet(await allWallets.getMany());
+        if (serializedWallets.length === 0) throw new NotFoundException('No Wallets Found');
+
         return serializedWallets;
     }
 
@@ -177,6 +179,8 @@ export class WalletsService {
         });
 
         const serializedTransactions = transactionsSerializer(await findTransactions.getMany());
+
+        if (serializedTransactions.length === 0) throw new NotFoundException('No transactions found for this wallet');
 
         return serializedTransactions;
     }
