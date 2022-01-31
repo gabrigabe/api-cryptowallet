@@ -17,6 +17,8 @@ import { WalletsService } from '../services/wallets.service';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
 import { AddFundsDTO } from '../dto/addFunds.dto';
 import { TransferFundsDTO } from '../dto/transferFunds.dto';
+import { WalletsQueryDTO } from '../dto/walletsQuery.dto';
+import { TransactionQueryDTO } from '../dto/transactionsQuery.dto';
 
 @Controller('api/v1/wallet')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,7 +31,7 @@ export class WalletsController {
     }
 
     @Get()
-    findAll(@Query() query: any) {
+    findAll(@Query() query: WalletsQueryDTO) {
         return this.walletsService.findAll(query);
     }
 
@@ -57,7 +59,7 @@ export class WalletsController {
     }
 
     @Get(':address/transaction')
-    findTransactions(@Query() query: any, @Param('address', ParseUUIDPipe) address: string) {
+    findTransactions(@Query() query: TransactionQueryDTO, @Param('address', ParseUUIDPipe) address: string) {
         return this.walletsService.getTransactionsHistory(address, query);
     }
 

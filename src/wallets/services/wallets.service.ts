@@ -49,12 +49,14 @@ export class WalletsService {
                 .leftJoin('wallets.coins', 'coins')
                 .leftJoin('coins.transactions', 'transactions');
             subquery.andWhere(`${query} = :${query}`);
-            subquery.setParameter(`${query}`, querys[query]);
+            allWallets.setParameter(`${query}`, querys[query]);
             allWallets.andWhere(`wallets.address  in (${subquery.getQuery()})`);
             allWallets.setParameters(subquery.getParameters());
         });
 
         const serializedWallets = serializeAllWallet(await allWallets.getMany());
+        if (serializedWallets.length === 0) throw new NotFoundException('No Wallets Found');
+
         return serializedWallets;
     }
 
@@ -177,6 +179,8 @@ export class WalletsService {
         });
 
         const serializedTransactions = transactionsSerializer(await findTransactions.getMany());
+
+        if (serializedTransactions.length === 0) throw new NotFoundException('No transactions found for this wallet');
 
         return serializedTransactions;
     }
