@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class WalletsQueryDTO {
     @IsString()
@@ -29,4 +29,12 @@ export class WalletsQueryDTO {
     @IsNumber()
     @IsOptional()
     'coins.amount': Number;
+
+    @IsDate()
+    @IsOptional()
+    createdAt: Date;
+
+    @IsDate()
+    @IsOptional()
+    updatedAt: Date;
 }
