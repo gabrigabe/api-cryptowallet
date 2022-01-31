@@ -17,6 +17,7 @@ import { WalletsService } from '../services/wallets.service';
 import { CreateWalletDto } from '../dto/create-wallet.dto';
 import { AddFundsDTO } from '../dto/addFunds.dto';
 import { TransferFundsDTO } from '../dto/transferFunds.dto';
+import { WalletsQueryDTO } from '../dto/walletsQuery.dto';
 
 @Controller('api/v1/wallet')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,7 +30,7 @@ export class WalletsController {
     }
 
     @Get()
-    findAll(@Query() query: any) {
+    findAll(@Query() query: WalletsQueryDTO) {
         return this.walletsService.findAll(query);
     }
 

@@ -49,7 +49,7 @@ export class WalletsService {
                 .leftJoin('wallets.coins', 'coins')
                 .leftJoin('coins.transactions', 'transactions');
             subquery.andWhere(`${query} = :${query}`);
-            subquery.setParameter(`${query}`, querys[query]);
+            allWallets.setParameter(`${query}`, querys[query]);
             allWallets.andWhere(`wallets.address  in (${subquery.getQuery()})`);
             allWallets.setParameters(subquery.getParameters());
         });
